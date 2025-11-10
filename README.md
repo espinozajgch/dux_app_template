@@ -1,6 +1,6 @@
-# Wellness & RPE App
+# Dux App
 
-Aplicación en Streamlit para registrar Wellness (Check-in) y RPE/UA (Check-out) por jugadora.
+Aplicación en Streamlit.
 
 ## Estructura
 
@@ -36,40 +36,6 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-### Estructura de cada registro (JSONL)
-
-```json
-{
-  "id_jugadora": "...",
-  "nombre": "...",
-  "fecha_hora": "YYYY-MM-DDTHH:MM:SS",
-  "tipo": "checkIn|checkOut",
-  "turno": "Turno 1|Turno 2|Turno 3",
-  "periodizacion_tactica": "-6..+6",
-  "recuperacion": int,
-  "fatiga": int,
-  "sueno": int,
-  "stress": int,
-  "dolor": int,
-  "partes_cuerpo_dolor": [],
-  "minutos_sesion": int,
-  "rpe": int,
-  "ua": int,
-  "en_periodo": bool,
-  "observacion": "..."
-}
-```
-
-Clave de actualización (upsert): `(id_jugadora, fecha YYYY-MM-DD, turno)`.
-El campo `turno` es obligatorio en el formulario (por defecto: "Turno 1").
-Si ya existe un registro para esa combinación, al guardar se actualiza en lugar de crear uno nuevo.
-
-## Validaciones
-
-- Jugadora obligatoria.
-- Check-in: escalas 1–5 (recuperación, fatiga, sueño, estrés, dolor). Si dolor > 1, seleccionar al menos una parte del cuerpo.
-- Check-out: minutos > 0, RPE 1–10. Se calcula automáticamente UA = RPE × minutos.
-
 ## Auth
 
 El sistema de autenticación desarrollado para este proyecto está diseñado para ser seguro, modular y reutilizable entre distintas aplicaciones. Está compuesto por tres capas principales: configuración, lógica base e interfaz de usuario, lo que permite mantener una arquitectura limpia y fácilmente integrable.
@@ -98,11 +64,6 @@ Principales características
 
 - Haz un fork del repositorio.
 - Configuración de remoto
-
-```bash
-git remote add upstream https://github.com/lucbra21/DuxLesiones.git
-git remote -v
-```
 
 - Crea una rama nueva para tus cambios
 - Realiza tus modificaciones y haz commit
