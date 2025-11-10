@@ -42,5 +42,5 @@ if df_filtrado is None or df_filtrado.empty:
 icon, desc, acwr, fatiga = calcular_semaforo_riesgo(df_filtrado)
 
 st.markdown(f"**Riesgo actual:** {icon} {desc}")
-#st.dataframe(df_filtrado)
+
 graficos_individuales(df_filtrado)
