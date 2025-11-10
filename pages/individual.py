@@ -28,6 +28,8 @@ jug_df = load_jugadoras_db()
 comp_df = load_competiciones_db()
 records_df = get_records_db()
 
+#st.dataframe(jug_df, hide_index=True)
+
 df_filtrado, jugadora = selection_header(jug_df, comp_df, records_df, modo="reporte")
 
 if not jugadora:

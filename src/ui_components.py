@@ -46,6 +46,9 @@ def selection_header(
             codigo_comp = competicion["codigo"]
             jug_df_filtrado = jug_df[jug_df["plantel"] == codigo_comp]
 
+            if posicion:
+                jug_df_filtrado = jug_df_filtrado[jug_df_filtrado["posicion"] == posicion]
+
             if not jug_df_filtrado.empty:
                 jugadoras_options = jug_df_filtrado.to_dict("records")
                 jugadora_opt = st.selectbox(
@@ -71,13 +74,13 @@ def selection_header(
         if competicion and "codigo" in competicion:
             df_filtrado = df_filtrado[df_filtrado["plantel"] == competicion["codigo"]]
 
-        # --- Filtrar por jugadora seleccionada ---
-        if jugadora_opt and "id_jugadora" in jugadora_opt:
-            df_filtrado = df_filtrado[df_filtrado["id_jugadora"] == jugadora_opt["id_jugadora"]]
-
         # --- Filtrar por posición ---
         if posicion and "posicion" in df_filtrado.columns:
             df_filtrado = df_filtrado[df_filtrado["posicion"] == posicion]
+
+        # --- Filtrar por jugadora seleccionada ---
+        if jugadora_opt and "id_jugadora" in jugadora_opt:
+            df_filtrado = df_filtrado[df_filtrado["id_jugadora"] == jugadora_opt["id_jugadora"]]
 
     return df_filtrado, jugadora_opt
 

@@ -3,7 +3,7 @@ import pandas as pd
 
 from src.auth_system.auth_core import init_app_state, validate_login
 from src.auth_system.auth_ui import login_view, menu
-
+from src.ui_app import grafico
 from src.db_records import get_records_db
 from numpy.random import default_rng as rng
 import src.config as config
@@ -61,3 +61,5 @@ with tabs[0]:
 with tabs[1]: 
     df = pd.DataFrame(rng(0).standard_normal((10, 20)), columns=("col %d" % i for i in range(20)))
     st.dataframe(df.style.highlight_max(axis=0))
+
+grafico()

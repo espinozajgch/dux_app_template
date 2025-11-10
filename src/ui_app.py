@@ -434,3 +434,17 @@ def generar_resumen_periodo(df: pd.DataFrame):
         "Este criterio combina el **riesgo global** (fatiga / bienestar bajo) y el **riesgo localizado** (molestias o dolor elevado)."
     )
 
+def grafico():
+    import pandas as pd
+    import plotly.express as px
+
+    data = {
+        "Dia": ["MD-6", "MD-5", "MD-4", "MD-3", "MD-2", "MD-1", "MD0", "MD+1"],
+        "Carga": [2, 4, 6, 8, 6, 5, 9, 3],
+    }
+
+    df = pd.DataFrame(data)
+    fig = px.area(df, x="Dia", y="Carga", title="Onda de carga del microciclo (periodización táctica)")
+    fig.update_traces(line_color="red", fillcolor="rgba(255,0,0,0.3)")
+    fig.update_yaxes(title_text="Intensidad / Carga interna")
+    st.plotly_chart(fig)
