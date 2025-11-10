@@ -11,7 +11,7 @@ validate_login()
 
 from src.ui_components import selection_header
 from src.reportes.ui_individual import metricas, graficos_individuales, calcular_semaforo_riesgo
-from src.db_records import get_records_wellness_db, load_jugadoras_db, load_competiciones_db
+from src.db_records import get_records_db, load_jugadoras_db, load_competiciones_db
 
 # Authentication gate
 if not st.session_state["auth"]["is_logged_in"]:
@@ -26,9 +26,9 @@ menu()
 # Load reference data
 jug_df = load_jugadoras_db()
 comp_df = load_competiciones_db()
-df = get_records_wellness_db()
+records_df = get_records_db()
 
-df_filtrado, jugadora, tipo, turno, start, end = selection_header(jug_df, comp_df, df, modo="reporte")
+df_filtrado, jugadora = selection_header(jug_df, comp_df, records_df, modo="reporte")
 
 if not jugadora:
     st.info("Selecciona una jugadora para continuar.")
@@ -38,8 +38,6 @@ if not jugadora:
 if df_filtrado is None or df_filtrado.empty:
     st.info("No hay registros aún (se requieren Check-out con UA calculado).")
     st.stop()
-
-metricas(df_filtrado, jugadora, turno, start, end)
 
 icon, desc, acwr, fatiga = calcular_semaforo_riesgo(df_filtrado)
 

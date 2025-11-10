@@ -14,7 +14,7 @@ def login_view() -> None:
             </style>
         """, unsafe_allow_html=True)
 
-        centered_text("Wellness & RPE")
+        centered_text("Dux App")
         st.image("assets/images/banner.png")
 
         with st.form("login_form", clear_on_submit=False):
@@ -37,7 +37,7 @@ def menu():
 
         st.page_link("app.py", label="Inicio", icon=":material/home:")
         st.subheader("Modo :material/dashboard:")
-        st.page_link("pages/registro.py", label="Registro", icon=":material/article_person:")
+        st.page_link("pages/page.py", label="Page", icon=":material/article_person:")
         st.subheader("Análisis y Estadísticas  :material/query_stats:")
         st.page_link("pages/individual.py", label="Individual", icon=":material/accessible_menu:")
         st.page_link("pages/grupal.py", label="Grupal", icon=":material/groups:")

@@ -1,16 +1,24 @@
 import pandas as pd
 import streamlit as st
-import datetime
+from src.schema import MAP_POSICIONES
 
-def selection_header(jug_df: pd.DataFrame, comp_df: pd.DataFrame, records_df: pd.DataFrame = None, modo: str = "registro") -> pd.DataFrame:
+def selection_header(
+    jug_df: pd.DataFrame,
+    comp_df: pd.DataFrame,
+    records_df: pd.DataFrame = None,
+    modo: str = "registro") -> tuple[pd.DataFrame, dict | None]:
     """
-    Muestra los filtros principales (Competición, Jugadora, Turno, Tipo/Fechas)
+    Muestra los filtros principales (Competición, Posición, Jugadora)
     y retorna el DataFrame de registros filtrado según las selecciones.
     """
 
-    col1, col2, col3, col4 = st.columns([3, 2, 1.5, 2])
+    if records_df is None:
+        records_df = pd.DataFrame()
 
-    # --- Selección de competición ---
+    # --- Ajuste: solo tres columnas (posición ahora es la segunda) ---
+    col1, col2, col3 = st.columns([3, 2, 3])
+
+    # --- Selección de competición / plantel ---
     with col1:
         competiciones_options = comp_df.to_dict("records")
         competicion = st.selectbox(
@@ -18,104 +26,60 @@ def selection_header(jug_df: pd.DataFrame, comp_df: pd.DataFrame, records_df: pd
             options=competiciones_options,
             format_func=lambda x: f'{x["nombre"]} ({x["codigo"]})',
             index=3,
+            placeholder="Seleccione una competición",
         )
-        #st.session_state["competicion"] = competiciones_options.index(competicion)
+
+    # --- Selección de posición ---
+    with col2:
+        posicion = st.selectbox(
+            "Posición",
+            options=list(MAP_POSICIONES.values()) if "MAP_POSICIONES" in globals() else [],
+            placeholder="Seleccione una posición",
+            index=None,
+        )
 
     # --- Selección de jugadora ---
-    with col2:
-        jugadora_opt = None
-        disabled_jugadores = True if modo == "reporte_grupal" else False
-        if not jug_df.empty:
+    jugadora_opt = None
+    with col3:
+        disabled_jugadoras = True if modo == "reporte_grupal" else False
+        if not jug_df.empty and competicion:
             codigo_comp = competicion["codigo"]
             jug_df_filtrado = jug_df[jug_df["plantel"] == codigo_comp]
-            jugadoras_options = jug_df_filtrado.to_dict("records")
 
-            jugadora_opt = st.selectbox(
-                "Jugadora",
-                options=jugadoras_options,
-                format_func=lambda x: f'{x["nombre"]} {x["apellido"]}',
-                index=None,
-                placeholder="Seleccione una Jugadora",
-                disabled = disabled_jugadores
-            )
-
-            #st.session_state["jugadora_opt"] = jugadora_opt["id_jugadora"] if jugadora_opt else None
+            if not jug_df_filtrado.empty:
+                jugadoras_options = jug_df_filtrado.to_dict("records")
+                jugadora_opt = st.selectbox(
+                    "Jugadora",
+                    options=jugadoras_options,
+                    format_func=lambda x: f'{x["nombre"]} {x.get("apellido", "")}'.strip(),
+                    index=None,
+                    placeholder="Seleccione una Jugadora",
+                    disabled=disabled_jugadoras,
+                )
+            else:
+                st.info(":material/info: No hay jugadoras para este plantel.")
         else:
-            st.warning(":material/warning: No hay jugadoras cargadas para esta competición.")
+            st.warning(":material/warning: No hay jugadoras cargadas o no se ha seleccionado un plantel.")
 
-    # --- Selección de turno ---
-    with col3:
-        turno = st.selectbox(
-            "Turno",
-            options=["Turno 1", "Turno 2", "Turno 3"],
-            index=0
-        )
-        #st.session_state.get("turno_idx", 0)
-        #st.session_state["turno_idx"] = ["Turno 1", "Turno 2", "Turno 3"].index(turno)
-
-    # --- Tipo o rango de fechas según modo ---
-    tipo, start, end = None, None, None
-    with col4:
-        if modo == "registro":
-            tipo = st.radio(
-                "Tipo de registro",
-                options=["Check-in", "Check-out"], horizontal=True,
-                index=0 
-            )
-            #if st.session_state.get("tipo") is None else ["Check-in", "Check-out"].index(st.session_state["tipo"])
-            #st.session_state["tipo"] = tipo
-
-        else:  # modo == "reporte"
-            hoy = datetime.date.today()
-            hace_15_dias = hoy - datetime.timedelta(days=15)
-
-            start_default = hace_15_dias 
-            end_default = hoy
-            #default_rango = st.session_state.get("fecha_rango", (hace_15_dias, hoy))
-            start, end = st.date_input( "Rango de fechas", value=(start_default, end_default), min_value=hace_15_dias, max_value=hoy )
-            #st.session_state["fecha_rango"] = (start, end)
-
-    if modo == "registro":
-        return jugadora_opt, tipo, turno
-    
     # ==================================================
     # 🧮 FILTRADO DEL DATAFRAME
     # ==================================================
     df_filtrado = records_df.copy()
-    
-    if not df_filtrado.empty:
-        # Filtrar por competición (plantel)
-        #if competicion and "codigo" in competicion:
-        #    df_filtrado = df_filtrado[df_filtrado["plantel"] == competicion["codigo"]]
 
-        # Filtrar por jugadora seleccionada
-        if jugadora_opt:
+    if not df_filtrado.empty:
+        # --- Filtrar por competición (plantel) ---
+        if competicion and "codigo" in competicion:
+            df_filtrado = df_filtrado[df_filtrado["plantel"] == competicion["codigo"]]
+
+        # --- Filtrar por jugadora seleccionada ---
+        if jugadora_opt and "id_jugadora" in jugadora_opt:
             df_filtrado = df_filtrado[df_filtrado["id_jugadora"] == jugadora_opt["id_jugadora"]]
 
-        # Filtrar por turno
-        if turno:
-            df_filtrado = df_filtrado[df_filtrado["turno"] == turno]
+        # --- Filtrar por posición ---
+        if posicion and "posicion" in df_filtrado.columns:
+            df_filtrado = df_filtrado[df_filtrado["posicion"] == posicion]
 
-        # Filtrar por tipo o fechas
-        if modo == "registros" and tipo:
-            df_filtrado = df_filtrado[df_filtrado["tipo"].str.lower() == tipo.lower()]
-        elif modo == "reporte" and start and end:
-            # Asegurar que fecha_sesion y start/end sean del mismo tipo (date)
-            if pd.api.types.is_datetime64_any_dtype(df_filtrado["fecha_sesion"]):
-                df_filtrado["fecha_sesion"] = df_filtrado["fecha_sesion"].dt.date
-            if hasattr(start, "to_pydatetime"):
-                start = start.date()
-            if hasattr(end, "to_pydatetime"):
-                end = end.date()
-            df_filtrado = df_filtrado[
-                (df_filtrado["fecha_sesion"] >= start) & (df_filtrado["fecha_sesion"] <= end)
-            ]
-    
-        # print(df_filtrado["fecha_sesion"].head())
-        # print(df_filtrado["fecha_sesion"].dtype)
-        # print(type(df_filtrado["fecha_sesion"].iloc[0]))
-
-    return df_filtrado, jugadora_opt, tipo, turno, start, end
+    return df_filtrado, jugadora_opt
 
 def preview_record(record: dict) -> None:
     #st.subheader("Previsualización")

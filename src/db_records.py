@@ -6,7 +6,7 @@ import datetime
 from src.schema import MAP_POSICIONES
 from src.db_connection import get_connection
 
-def get_records_wellness_db(as_df: bool = True):
+def get_records_db(as_df: bool = True):
     """
     Carga todos los registros de la tabla 'wellness' desde la base de datos MySQL,
     uniendo los nombres descriptivos de los catálogos de estímulos.
@@ -35,6 +35,7 @@ def get_records_wellness_db(as_df: bool = True):
                 w.id_jugadora,
                 f.nombre,
                 f.apellido,
+                f.competicion AS plantel,
                 w.fecha_sesion,
                 w.tipo,
                 w.turno,
